@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥽</text></svg>">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>황유나 — XR · HCI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<style>
+  :root {
+    --primary: #171717;
+    --on-primary: #ffffff;
+    --ink: #171717;
+    --body: #4d4d4d;
+    --mute: #888888;
+    --hairline: #ebebeb;
+    --hairline-strong: #a1a1a1;
+    --canvas: #ffffff;
+    --canvas-soft: #fafafa;
+    --link: #0070f3;
+    --g1: #007cf0; --g2: #00dfd8;
+    --g3: #7928ca; --g4: #ff0080;
+    --g5: #ff4d4d; --g6: #f9cb28;
+
+    --sans: "Inter", "Pretendard Variable", Pretendard, system-ui, -apple-system, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+
+    --ring: inset 0 0 0 1px #00000014;
+    --soft-stack: 0 2px 2px #0000000a, 0 8px 8px -8px #0000000a, inset 0 0 0 1px #00000014;
+    --float-stack: 0 2px 2px #0000000a, 0 8px 16px -4px #0000000a, inset 0 0 0 1px #00000014;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-feature-settings: "ss01", "ss02";
+    font-size: 16px;
+    line-height: 24px;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  ::selection { background: #171717; color: #f2f2f2; }
+  a { color: inherit; text-decoration: none; }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- nav ---------- */
+  nav {
+    position: sticky; top: 0; z-index: 20;
+    height: 64px;
+    background: rgba(255,255,255,.8);
+    backdrop-filter: saturate(180%) blur(8px);
+    border-bottom: 1px solid var(--hairline);
+  }
+  nav .wrap { height: 100%; display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-weight: 600; letter-spacing: -0.4px; }
+  .nav-links { display: flex; gap: 4px; }
+  .nav-links a {
+    font-size: 14px; line-height: 20px; letter-spacing: -0.28px;
+    color: var(--body);
+    padding: 8px 12px; border-radius: 9999px;
+    transition: background .15s, color .15s;
+  }
+  .nav-links a:hover { background: #f2f2f2; color: var(--ink); }
+
+  /* ---------- hero ---------- */
+  .hero {
+    position: relative;
+    padding: 128px 0 112px;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .mesh {
+    position: absolute; inset: -20% -10% auto -10%; height: 90%;
+    z-index: -1; pointer-events: none;
+    filter: blur(72px); opacity: .55;
+  }
+  .mesh span {
+    position: absolute; width: 42%; aspect-ratio: 1; border-radius: 50%;
+    transition: transform 1.2s cubic-bezier(.2,.8,.2,1);
+  }
+  .mesh .b1 { left: 8%;  top: 10%; background: radial-gradient(circle, var(--g2), var(--g1) 70%); }
+  .mesh .b2 { left: 34%; top: 0;   background: radial-gradient(circle, var(--g4), var(--g3) 70%); }
+  .mesh .b3 { left: 58%; top: 18%; background: radial-gradient(circle, var(--g6), var(--g5) 70%); }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 12px; line-height: 16px;
+    color: var(--body);
+    background: var(--canvas);
+    padding: 6px 12px; border-radius: 9999px;
+    box-shadow: var(--ring);
+  }
+  .badge i { width: 6px; height: 6px; border-radius: 50%; background: #29bc9b; }
+  h1 {
+    margin-top: 24px;
+    font-size: clamp(36px, 6vw, 64px);
+    line-height: 1.05;
+    font-weight: 600;
+    letter-spacing: -0.045em;
+    max-width: 14ch;
+  }
+  .lead {
+    margin-top: 24px;
+    font-size: 18px; line-height: 28px; color: var(--body);
+    max-width: 52ch;
+  }
+  .cta { margin-top: 40px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 48px; padding: 0 24px;
+    border-radius: 100px;
+    font-size: 16px; line-height: 24px; font-weight: 500;
+    transition: transform .15s, background .15s;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn-primary { background: var(--primary); color: var(--on-primary); }
+  .btn-primary:hover { background: #383838; }
+  .btn-secondary { background: var(--canvas); color: var(--ink); box-shadow: var(--ring); }
+  .btn-secondary:hover { background: var(--canvas-soft); }
+
+  /* ---------- sections ---------- */
+  section.band { padding: 96px 0; }
+  .soft { background: var(--canvas-soft); border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); }
+  .eyebrow {
+    font-family: var(--mono); font-size: 12px; line-height: 16px;
+    color: var(--mute); text-transform: uppercase; letter-spacing: .04em;
+  }
+  h2 {
+    margin-top: 12px;
+    font-size: 32px; line-height: 40px; font-weight: 600; letter-spacing: -1.28px;
+  }
+  .sub { margin-top: 12px; color: var(--body); font-size: 18px; line-height: 28px; max-width: 56ch; }
+
+  /* about */
+  .about-grid { margin-top: 48px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .card {
+    background: var(--canvas); border-radius: 8px; padding: 24px;
+    box-shadow: var(--soft-stack);
+  }
+  .card h3 { font-size: 20px; line-height: 28px; font-weight: 600; letter-spacing: -0.6px; }
+  .card p { margin-top: 8px; color: var(--body); font-size: 14px; line-height: 22px; }
+  .chips { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    font-family: var(--mono); font-size: 12px; line-height: 16px;
+    padding: 4px 10px; border-radius: 9999px;
+    background: var(--canvas-soft); box-shadow: var(--ring); color: var(--body);
+  }
+
+  /* timeline */
+  .timeline { margin-top: 48px; border-top: 1px solid var(--hairline); }
+  .row {
+    display: grid; grid-template-columns: 180px 1fr; gap: 24px;
+    padding: 24px 0; border-bottom: 1px solid var(--hairline);
+  }
+  .row .when { font-family: var(--mono); font-size: 13px; line-height: 24px; color: var(--mute); }
+  .row h3 { font-size: 16px; font-weight: 500; }
+  .row p { margin-top: 4px; color: var(--body); font-size: 14px; line-height: 22px; }
+
+  /* projects */
+  .proj-grid { margin-top: 48px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+  .proj {
+    border-radius: 12px; padding: 32px; background: var(--canvas);
+    box-shadow: var(--float-stack);
+    display: flex; flex-direction: column; gap: 12px;
+    transition: transform .2s;
+  }
+  .proj:hover { transform: translateY(-2px); }
+  .proj .tag { font-family: var(--mono); font-size: 12px; color: var(--mute); }
+  .proj h3 { font-size: 24px; line-height: 32px; font-weight: 600; letter-spacing: -0.96px; }
+  .proj p { color: var(--body); font-size: 15px; line-height: 24px; }
+  .proj .chips { margin-top: auto; padding-top: 8px; }
+
+  /* contact – polarity flipped */
+  .dark { background: var(--primary); color: var(--on-primary); }
+  .dark .eyebrow { color: var(--hairline-strong); }
+  .dark .sub { color: #a1a1a1; }
+  .term {
+    margin-top: 48px;
+    font-family: var(--mono); font-size: 13px; line-height: 22px;
+    background: #0a0a0a; border-radius: 8px; padding: 24px;
+    box-shadow: inset 0 0 0 1px #ffffff1f;
+    max-width: 560px;
+  }
+  .term .p { color: #50e3c2; }
+  .term .c { color: #888; }
+  .term a { color: #fff; border-bottom: 1px dashed #ffffff55; }
+  .term a:hover { border-bottom-color: #fff; }
+  .dark .cta .btn-primary { background: #fff; color: var(--ink); }
+  .dark .cta .btn-primary:hover { background: #ebebeb; }
+  .dark .cta .btn-secondary { background: transparent; color: #fff; box-shadow: inset 0 0 0 1px #ffffff3d; }
+  .dark .cta .btn-secondary:hover { background: #ffffff12; }
+
+  footer { padding: 32px 0; font-size: 12px; color: var(--mute); border-top: 1px solid var(--hairline); }
+  footer .wrap { display: flex; justify-content: space-between; font-family: var(--mono); }
+
+  /* cursor follower */
+.cursor {
+  position: fixed; top: 0; left: 0; z-index: 50; pointer-events: none;
+  width: 28px; height: 28px; margin: -14px 0 0 -14px;
+  border-radius: 50%;
+  border: 1px solid var(--ink);
+  transition: width .2s, height .2s, margin .2s, background .2s, border-color .2s;
+}
+.cursor.dot { width: 6px; height: 6px; margin: -3px 0 0 -3px; background: var(--ink); border: 0; }
+.cursor.big { width: 56px; height: 56px; margin: -28px 0 0 -28px; background: #17171714; }
+.cursor.on-dark { border-color: #fff; }
+.cursor.dot.on-dark { background: #fff; }
+  @media (hover: none) { .cursor { display: none; } }
+
+  /* reveal */
+  .reveal { opacity: 0; transform: translateY(12px); transition: opacity .6s, transform .6s; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (max-width: 860px) {
+    .about-grid { grid-template-columns: 1fr; }
+    .proj-grid { grid-template-columns: 1fr; }
+    .row { grid-template-columns: 1fr; gap: 4px; }
+    .nav-links a:not(:last-child) { display: none; }
+    .hero { padding: 96px 0 80px; }
+    section.band { padding: 64px 0; }
+    .wrap { padding: 0 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .mesh span { transition: none; }
+  }
+
+  .mail-card {
+  background: #262626;
+  box-shadow: inset 0 0 0 1px #ffffff1f;  /* 얇은 테두리 */
+}
+.mail-card h3 { color: #ffffff; font-size: 24px; }
+.mail-card p  { color: #a1a1a1; }
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 300px;  /* 오른쪽 사진 칸 너비 */
+  gap: 48px;
+  align-items: center;
+}
+.hero-profile {
+  background: #ffffffcc;
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: var(--float-stack);
+  transition: transform .2s;
+}
+.hero-profile:hover { transform: translateY(-4px); }
+.hero-profile img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;      /* 세로형 비율 */
+  object-fit: cover;        /* 사진이 찌그러지지 않게 */
+  border-radius: 8px;
+}
+.hero-profile figcaption {
+  padding: 16px 8px 8px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.hero-profile strong {
+  font-size: 24px; line-height: 32px;
+  font-weight: 600; letter-spacing: -0.96px;
+}
+.hero-profile span {
+  font-family: var(--mono);
+  font-size: 12px; color: var(--mute);
+}
+
+@media (max-width: 860px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .hero-profile { max-width: 280px; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="cursor" id="ring"></div>
+<div class="cursor dot" id="dot"></div>
+
+<nav>
+  <div class="wrap">
+    <a href="#top" class="logo">황유나</a>
+    <div class="nav-links">
+      <a href="#about">자기소개</a>
+      <a href="#career">학력 및 경력</a>
+      <a href="#projects">프로젝트</a>
+      <a href="#contact">컨택</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="mesh" id="mesh"><span class="b1"></span><span class="b2"></span><span class="b3"></span></div>
+
+  <div class="wrap hero-grid">
+    <div class="hero-text">
+      <span class="badge"><i></i>Computer Science and Engineering</span>
+      <h1>현실 위에<br>경험을 설계합니다.</h1>
+      <p class="lead">HCI, XR을 공부하는 경희대학교 컴퓨터공학과 학생 황유나입니다.</p>
+      <div class="cta">
+        <a href="#projects" class="btn btn-primary hoverable">프로젝트 보기 →</a>
+        <a href="#contact" class="btn btn-secondary hoverable">CONTACT</a>
+      </div>
+    </div> <!-- hero-text 끝: 여기서 꼭 닫기 -->
+
+    <figure class="hero-profile hoverable">
+      <img src="profile.jpg" alt="황유나 프로필 사진">
+      <figcaption>
+        <strong>Yuna Hwang</strong>
+        <span>XR · HCI · Kyung Hee Univ.</span>
+      </figcaption>
+    </figure>
+  </div>
+</header>
+
+<section class="band soft" id="about">
+  <div class="wrap">
+    <p class="eyebrow">01 — About</p>
+    <h2 class="reveal">안녕하세요, 황유나입니다.</h2>
+    <p class="sub reveal">가상과 현실의 경계에서 사람과 사람, 사람과 지식을 잇는 일에 관심이 많습니다.</p>
+
+    <div class="about-grid">
+      <div class="card reveal">
+        <h3>관심 분야</h3>
+        <p>인간-컴퓨터 상호작용, 그중에서도 몰입형 환경(XR)에서의 인터랙션.</p>
+        <div class="chips"><span class="chip">HCI</span><span class="chip">XR</span><span class="chip">AR</span></div>
+      </div>
+      <div class="card reveal">
+        <h3>다루는 도구</h3>
+        <p>3D 콘텐츠 제작과 인터랙션 구현을 위해 익히고 있는 도구들.</p>
+        <div class="chips"><span class="chip">Unity</span><span class="chip">Blender</span><span class="chip">Web Frontend</span></div>
+      </div>
+      <div class="card reveal">
+        <h3>그리는 미래</h3>
+        <p>AR 기반 소셜 네트워킹과 교육 콘텐츠로, XR 분야에서 의미 있는 경험을 만드는 사람.</p>
+        <div class="chips"><span class="chip">Social AR</span><span class="chip">EdTech</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="career">
+  <div class="wrap">
+    <p class="eyebrow">02 — Education &amp; Experience</p>
+    <h2 class="reveal">학력 및 경력</h2>
+
+    <div class="timeline">
+      <div class="row reveal">
+        <span class="when">2026 — 2027</span>
+        <div>
+          <h3>제28대 컴퓨터공학부 학생회 홍보부장</h3>
+          <p>컴퓨터공학부의 인스타그램 게시물 제작 및 운영</p>
+        </div>
+      </div>
+      <div class="row reveal">
+        <span class="when">2026 — 2027</span>
+        <div>
+          <h3>컴퓨터공학부 학술동아리 T.G.winG 기획부장</h3>
+          <p>동아리 행사 기획 및 운영</p>
+        </div>
+      </div>
+      <div class="row reveal">
+        <span class="when">2026</span>
+        <div>
+          <h3>해외 전공연수</h3>
+          <p>단과대 전공연수 - 독일 자르브뤼켄</p>
+        </div>
+      </div>
+      <div class="row reveal">
+        <span class="when">2025 —</span>
+        <div>
+          <h3>성적 우수장학</h3>
+          <p>2025-2, 2026-1, 2026-2 수혜</p>
+        </div>
+      </div>
+      <div class="row reveal">
+        <span class="when">2024 —</span>
+        <div>
+          <h3>경희대학교 컴퓨터공학과</h3>
+          <p>학사 과정 재학 중</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band soft" id="projects">
+  <div class="wrap">
+    <p class="eyebrow">03 — Projects</p>
+    <h2 class="reveal">프로젝트</h2>
+    <p class="sub reveal">팀 프로젝트 및 개인 작업입니다.</p>
+
+    <div class="proj-grid">
+      <article class="proj reveal hoverable">
+        <span class="tag">// VR · Team project</span>
+        <h3>제스처로 만드는 효과</h3>
+        <p>손동작을 인식해 마법과 같은 효과를 쓸 수 있는 VR 인터랙션 프로젝트.<br>햅틱 수트를 이용한 피드백으로 깊어지는 몰입감.</p>
+        <div class="chips"><span class="chip">Unity</span><span class="chip">Blender</span><span class="chip">Gesture Recognition</span><span class="chip">VR</span></div>
+      </article>
+      <article class="proj reveal hoverable">
+        <span class="tag">// Design</span>
+        <h3>인스타그램 게시물 제작</h3>
+        <p>컴퓨터공학부 학생회에서 운영하는 인스타그램 계정의<br>게시물 제작 및 디자인.</p>
+        <div class="chips"><span class="chip">Figma</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="band dark" id="contact">
+  <div class="wrap">
+    <p class="eyebrow">04 — Contact</p>
+    <h2 class="reveal">연락</h2>
+    <p class="sub reveal">연구, 프로젝트, XR에 관한 어떤 이야기든 환영합니다.</p>
+    <div class="about-grid">
+  <div class="card reveal mail-card">
+    <h3>E-mail Address</h3>
+    <p>yuna01180@khu.ac.kr</p>
+  </div>
+</div>
+
+    <div class="cta">
+      <a href="#top" class="btn btn-secondary hoverable">맨 위로 ↑</a>
+    </div>
+  </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap"><span>Yuna Hwang</span><span>Gyeonggi, KR</span></div>
+</footer>
+
+<script>
+  // cursor follower (ring eases toward the dot)
+  const ring = document.getElementById('ring');
+  const dot = document.getElementById('dot');
+  const mesh = document.querySelectorAll('#mesh span');
+  let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
+
+  addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    dot.style.transform = `translate(${mx}px, ${my}px)`;
+    // hero mesh drifts gently toward the pointer
+    const dx = (mx / innerWidth - .5), dy = (my / innerHeight - .5);
+    mesh.forEach((s, i) => {
+      const k = (i + 1) * 40;
+      s.style.transform = `translate(${dx * k}px, ${dy * k}px)`;
+    });
+  });
+  (function loop() {
+    rx += (mx - rx) * 0.15; ry += (my - ry) * 0.15;
+    ring.style.transform = `translate(${rx}px, ${ry}px)`;
+    requestAnimationFrame(loop);
+  })();
+  document.querySelectorAll('.hoverable').forEach(el => {
+    el.addEventListener('mouseenter', () => ring.classList.add('big'));
+    el.addEventListener('mouseleave', () => ring.classList.remove('big'));
+  });
+
+  const darkSec = document.getElementById('contact');
+addEventListener('mousemove', e => {
+  const r = darkSec.getBoundingClientRect();
+  const on = e.clientY > r.top && e.clientY < r.bottom;
+  ring.classList.toggle('on-dark', on);
+  dot.classList.toggle('on-dark', on);
+});
+
+  // reveal on scroll
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  }), { threshold: .15 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>
